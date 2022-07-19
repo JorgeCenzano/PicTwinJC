@@ -1,0 +1,165 @@
+@startuml
+left to right direction
+
+package cl.ucn.disc.dsm.pictwin.backendpt.model {
+
+    class Pic {
+
+        -	id : Long
+        -	timestamp: ZonedDateTime
+        -	dislikes: Integer
+        -	latitude: Double
+        -	longitude: Double
+        -	error: Double
+        -	views: Integer
+        -	name: String
+        -	picture: byte[]
+        + Pic(..)
+        + getId() : Long
+        + getTimestamp() : ZonedDateTime
+        + getDislikes() : Integer
+        + incrementDislikes() : Integer
+        + getLatitude() : Double
+        + getLongitude() : Double
+        + getError() : Double
+        + getViews() : Integer
+        + incrementViews() : Integer
+        + getName() : String
+        + getPicture() : byte[]
+        + getOwner(): User
+
+    }
+
+    class Twin {
+
+        -	id: Long
+        -	dislike: boolean
+        + Twin(..)
+        + getId(): Long
+        + getDislike(): boolean
+        + setDislike(): void
+        + getMy(): Pic
+        + getYours(): Pic
+
+    }
+    Twin --> "1" Pic: -my: Pic
+    Twin --> "1" Pic: -yours: Pic
+
+    enum State {
+
+        ACTIVE
+        BANNED
+
+    }
+
+    class User {
+
+        -	id: Long
+        -	email: String
+        -	password: String
+        -	strikes: Integer
+        + User(..)
+        + getId(): Long
+        + getEmail(): String
+        + getPassword(): String
+        + getStrikes(): Integer
+        + incrementStrikes(): Integer
+        + getState(): State
+        + getTwins(): List<Twin>
+
+    }
+    User --> "1" State: -state: State
+    User --> "*" Twin: -twins: List<Twins>
+    User <-- Pic: -owner: User
+
+}
+
+package org.springframework.data.repository {
+
+	interface CrudRepository<T, ID> {
+	}
+    interface ListCrudRepository<T, ID> {
+    }
+    ListCrudRepository --|> CrudRepository
+
+}
+package cl.ucn.disc.dsm.pictwin.backendpt.dao {
+
+    interface PicRepository<Pic, Long> {
+    }
+    PicRepository --|> ListCrudRepository
+    interface TwinRepository<Twin, Long> {
+    }
+    TwinRepository --|> ListCrudRepository
+    interface UserRepository<User, Long> {
+    }
+    UserRepository --|> ListCrudRepository
+
+    class DatabaseLoader {
+
+        + DatabaseLoader(UserRepository, TwinRepository, PicRepository)
+        + run(String..): void
+
+    }
+}
+
+package cl.ucn.disc.dsm.pictwin.backendpt.services {
+
+    interface PicTwin {
+
+        + create(user: User, password: String): User
+        + authenticate(email: String, password: String): User
+        + createTwin(pic: Pic, idUser: Long): Twin
+        + dislike(idTwin: Long, iduser: Long): void
+        + getUserSize(): Long
+
+    }
+    PicTwin ..> User: <<use>>
+    PicTwin ..> Pic: <<use>>
+    PicTwin ..> Twin: <<use>>
+    DatabaseLoader --> "1" PicTwin: -picTwin: PicTwin
+
+    class PicTwinImpl {
+
+        - {static} PASSWORD_ENCODER: PasswordEncoder
+
+    }
+    PicTwinImpl ..|> PicTwin
+    PicTwinImpl --> "1" UserRepository: -userRepo
+    PicTwinImpl --> "1" TwinRepository: -twinRepo
+    PicTwinImpl --> "1" PicRepository: -picRepo
+}
+
+package cl.ucn.disc.dsm.pictwin.backendpt.web {
+
+    class PicTwinRestController {
+
+        + PicTwinRestController(picTwin: PicTwin)
+        + create(user: User, password: String): User
+        + authenticate(email: String, password: String): User
+        + createTwin(pic: Pic, idUser: Long): Twin
+        + dislike(idTwin: Long, idUser: Long): void
+
+    }
+    PicTwinRestController --> "1" PicTwin: -picTwin: PicTwin
+
+    class BackendApplication {
+
+        + {static} main(args[]: String): void
+
+    }
+    BackendApplication ..> PicTwinRestController: <<use>>
+
+}
+package cl.ucn.disc.dsm.pictwin.backendpt {
+
+	class Utils {
+
+        + {static} printObject(objectName: String, o: Object): void
+
+	}
+	DatabaseLoader ..> Utils: <<use>>
+}
+
+@enduml
+

@@ -1,0 +1,55 @@
+plugins {
+    id 'org.springframework.boot' version '3.0.0-M3'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+group = 'cl.ucn.disc.dsm.pictwin'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.hsqldb:hsqldb'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Crypto library
+    implementation 'org.springframework.security:spring-security-crypto:5.6.3'
+    runtimeOnly 'org.bouncycastle:bcprov-jdk15on:1.70'
+    runtimeOnly 'org.springframework:spring-jcl:5.3.20'
+
+    // Database
+    runtimeOnly 'com.h2database:h2'
+    // runtimeOnly 'org.xerial:sqlite-jdbc:3.36.0.3'
+    // runtimeOnly 'com.github.gwenn:sqlite-dialect:0.1.2'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+allprojects {
+    buildDir = "${System.env.TEMP}\\gradle\\${project.name}"
+}
